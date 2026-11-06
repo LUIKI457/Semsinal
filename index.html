@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101820">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Sem Sinal</title>
+<style>
+:root{--bg:#101820;--fg:#f2ece0;--acc:#ffb703;--ac:#000;--r:16px;--font:system-ui,sans-serif;--card:color-mix(in srgb,var(--fg) 9%,var(--bg))}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg) center/cover fixed;color:var(--fg);font-family:var(--font);-webkit-tap-highlight-color:transparent}
+#app{height:100%;display:flex;flex-direction:column;max-width:640px;margin:auto;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#app.ph{background:color-mix(in srgb,var(--bg) 72%,transparent)}
+header{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.av{width:46px;height:46px;border-radius:calc(var(--r)*.8);background:var(--acc);color:var(--ac);display:grid;place-items:center;font-weight:700;font-size:1.2rem;overflow:hidden;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+header h1{font-size:1.15rem;line-height:1.2}
+header p{font-size:.82rem;opacity:.75}
+#st{margin-left:auto;font-size:.72rem;padding:5px 10px;border-radius:99px;background:var(--card);white-space:nowrap}
+#v{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 16px}
+#v.fotos,#v.estilo{display:block;overflow:auto;padding-bottom:16px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;flex:none}
+.chip{border:0;background:var(--card);color:var(--fg);padding:8px 14px;border-radius:99px;font:inherit;white-space:nowrap}
+.chip.on{background:var(--acc);color:var(--ac)}
+.th{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.b{max-width:80%;padding:10px 12px;border-radius:var(--r);background:var(--card);align-self:flex-start;word-break:break-word}
+.b.me{align-self:flex-end;background:var(--acc);color:var(--ac)}
+.b img{display:block;max-width:100%;border-radius:calc(var(--r)*.6);margin-bottom:4px}
+.empty{opacity:.65;text-align:center;margin:auto;padding:20px;line-height:1.4}
+.tools{display:flex;gap:8px;padding:8px 0 0;flex:none;flex-wrap:wrap}
+.btn{border:0;background:var(--card);color:var(--fg);padding:9px 13px;border-radius:var(--r);font:inherit;font-size:.85rem}
+.btn.pri{background:var(--acc);color:var(--ac)}
+.comp{display:flex;gap:8px;padding:8px 0 10px;flex:none}
+.comp input{flex:1;min-width:0;border:0;background:var(--card);color:var(--fg);padding:12px 16px;border-radius:99px;font:inherit}
+.ic{border:0;width:44px;height:44px;border-radius:50%;background:var(--card);color:var(--fg);font-size:1.1rem;flex:none}
+.ic.pri{background:var(--acc);color:var(--ac)}
+nav{display:flex;background:var(--card);border-radius:var(--r) var(--r) 0 0;flex:none}
+nav button{flex:1;border:0;background:none;color:var(--fg);padding:13px 0;font:inherit;opacity:.6}
+nav button.on{opacity:1;color:var(--acc);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:calc(var(--r)*.5)}
+label{display:block;margin:14px 0 5px;font-size:.85rem;opacity:.85}
+.f input[type=text],.f select{width:100%;border:0;background:var(--card);color:var(--fg);padding:11px 13px;border-radius:calc(var(--r)*.6);font:inherit}
+.f input[type=color]{width:100%;height:42px;border:0;background:none;padding:0}
+.f input[type=range]{width:100%;accent-color:var(--acc)}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:.8rem;opacity:.7;margin-top:10px;line-height:1.4}
+.md{position:fixed;inset:0;background:#000d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;z-index:9}
+.md img{max-width:100%;max-height:68%;border-radius:var(--r)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="av" id="av"></div>
+    <div><h1 id="nm"></h1><p id="sl"></p></div>
+    <span id="st"></span>
+  </header>
+  <main id="v"></main>
+  <nav>
+    <button data-t="chat">Conversas</button>
+    <button data-t="fotos">Fotos</button>
+    <button data-t="estilo">Estilo</button>
+  </nav>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const el=(t,c='',x='')=>{const e=document.createElement(t);if(c)e.className=c;if(x)e.textContent=x;return e};
+const DEF={name:'Sem Sinal',slogan:'Sem internet, sem problemas.',me:'Eu',bg:'#101820',fg:'#f2ece0',acc:'#ffb703',r:16,font:'system-ui,sans-serif',c:'c1'};
+let S={...DEF};
+try{Object.assign(S,JSON.parse(localStorage.getItem('s')||'{}'))}catch(e){}
+const D={photos:[],msgs:[],contacts:[{id:'c1',name:'Contato 1'}],bgp:null,av:null};
+let tab='chat',dp=null;
+const save=()=>{try{localStorage.setItem('s',JSON.stringify(S))}catch(e){}};
+const idb=()=>new Promise((ok,no)=>{const q=indexedDB.open('ss',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>ok(q.result);q.onerror=no});
+const kv={async get(k){try{const d=await idb();return await new Promise(r=>{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r()})}catch(e){}},
+ async set(k,v){try{const d=await idb();return await new Promise(r=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=r;t.onerror=r})}catch(e){}}};
+const persist=k=>kv.set(k,D[k]);
+const cur=()=>D.contacts.find(x=>x.id===S.c)||D.contacts[0];
+const lum=h=>{const n=parseInt(h.slice(1),16);return((n>>16)*299+((n>>8)&255)*587+(n&255)*114)/1000};
+async function shrink(f,m=1280){const b=await createImageBitmap(f);const k=Math.min(1,m/Math.max(b.width,b.height));const c=document.createElement('canvas');c.width=Math.round(b.width*k);c.height=Math.round(b.height*k);c.getContext('2d').drawImage(b,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.82)}
+function pick(multi,cam,cb){const i=document.createElement('input');i.type='file';i.accept='image/*';i.multiple=multi;if(cam)i.capture='environment';i.onchange=async()=>{for(const f of i.files)cb(await shrink(f))};i.click()}
+
+function theme(){
+  const r=document.documentElement.style;
+  r.setProperty('--bg',S.bg);r.setProperty('--fg',S.fg);r.setProperty('--acc',S.acc);
+  r.setProperty('--ac',lum(S.acc)>140?'#000':'#fff');
+  r.setProperty('--r',S.r+'px');r.setProperty('--font',S.font);
+  document.body.style.backgroundImage=D.bgp?`url(${D.bgp})`:'';
+  $('#app').classList.toggle('ph',!!D.bgp);
+  $('meta[name=theme-color]').content=S.bg;
+  document.title=S.name;
+}
+function head(){
+  $('#nm').textContent=S.name;$('#sl').textContent=S.slogan;
+  const a=$('#av');a.innerHTML='';
+  if(D.av){const i=new Image();i.src=D.av;a.append(i)}else a.textContent=(S.name||'?')[0].toUpperCase();
+}
+function status(){$('#st').textContent=navigator.onLine?'online':'offline, tudo certo'}
+addEventListener('online',status);addEventListener('offline',status);
+
+function render(){
+  theme();head();status();
+  const v=$('#v');v.innerHTML='';v.className=tab;
+  ({chat,fotos,estilo})[tab](v);
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+  const th=$('.th');if(th)th.scrollTop=th.scrollHeight;
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+
+function view(src,idx){
+  const m=el('div','md');const i=new Image();i.src=src;m.append(i);
+  const r=el('div','row');
+  const btn=(t,f,p)=>{const b=el('button','btn'+(p?' pri':''),t);b.onclick=()=>{f();m.remove()};r.append(b)};
+  if(idx>=0){
+    btn('Usar de fundo',()=>{D.bgp=src;persist('bgp');render()},1);
+    btn('Usar de avatar',()=>{D.av=src;persist('av');render()});
+    btn('Apagar',()=>{D.photos.splice(idx,1);persist('photos');render()});
+  }
+  btn('Fechar',()=>{});
+  m.append(r);document.body.append(m);
+}
+
+function send(t,img){
+  const m={c:cur().id,me:true,t,img,ts:Date.now()};
+  m.k=m.ts+'|'+t+'|'+(img?img.length:0);
+  D.msgs.push(m);persist('msgs');render();
+}
+function chat(v){
+  const c=cur();
+  const bar=el('div','chips');
+  D.contacts.forEach(x=>{const b=el('button','chip'+(x.id===c.id?' on':''),x.name);b.onclick=()=>{S.c=x.id;save();render()};bar.append(b)});
+  const add=el('button','chip','+ contato');
+  add.onclick=()=>{const n=prompt('Nome do contato');if(n&&n.trim()){const id='c'+Date.now();D.contacts.push({id,name:n.trim()});S.c=id;persist('contacts');save();render()}};
+  bar.append(add);v.append(bar);
+  const th=el('div','th');
+  const ms=D.msgs.filter(m=>m.c===c.id);
+  if(!ms.length)th.append(el('p','empty','Nenhuma mensagem ainda. Escreva algo ou envie uma foto. Tudo fica guardado só neste celular.'));
+  ms.forEach(m=>{const b=el('div','b'+(m.me?' me':''));
+    if(m.img){const i=new Image();i.src=m.img;i.onclick=()=>view(m.img,-1);b.append(i)}
+    if(m.t)b.append(el('span','',m.t));th.append(b)});
+  v.append(th);
+  const tl=el('div','tools');
+  const ex=el('button','btn','Exportar conversa');ex.onclick=exportar;
+  const im=el('button','btn','Importar conversa');im.onclick=importar;
+  const cl=el('button','btn','Limpar');cl.onclick=()=>{if(confirm('Apagar esta conversa?')){D.msgs=D.msgs.filter(m=>m.c!==c.id);persist('msgs');render()}};
+  tl.append(ex,im,cl);v.append(tl);
+  const f=el('div','comp');
+  const ph=el('button','ic','📷');ph.onclick=()=>pick(false,false,d=>send('',d));
+  const inp=document.createElement('input');inp.placeholder='Mensagem';
+  const go=el('button','ic pri','➤');
+  const fire=()=>{const t=inp.value.trim();if(t)send(t)};
+  go.onclick=fire;inp.onkeydown=e=>{if(e.key==='Enter')fire()};
+  f.append(ph,inp,go);v.append(f);
+}
+async function exportar(){
+  const c=cur();
+  const data={app:'semsinal',from:S.me,msgs:D.msgs.filter(m=>m.c===c.id).map(m=>({t:m.t,img:m.img,ts:m.ts,mine:m.me}))};
+  const f=new File([JSON.stringify(data)],'conversa-'+c.name+'.json',{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){if(e.name==='AbortError')return}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click();
+}
+function importar(){
+  const i=document.createElement('input');i.type='file';i.accept='.json,application/json';
+  i.onchange=async()=>{
+    try{
+      const d=JSON.parse(await i.files[0].text());
+      if(d.app!=='semsinal')throw 0;
+      let c=D.contacts.find(x=>x.name===d.from);
+      if(!c){c={id:'c'+Date.now(),name:d.from||'Contato'};D.contacts.push(c);persist('contacts')}
+      const have=new Set(D.msgs.filter(m=>m.c===c.id).map(m=>m.k));
+      let n=0;
+      d.msgs.forEach(m=>{const k=m.ts+'|'+m.t+'|'+(m.img?m.img.length:0);if(have.has(k))return;D.msgs.push({c:c.id,me:!m.mine,t:m.t,img:m.img,ts:m.ts,k});n++});
+      D.msgs.sort((a,b)=>a.ts-b.ts);
+      S.c=c.id;save();persist('msgs');render();alert(n+' mensagens novas.');
+    }catch(e){alert('Arquivo inválido. Use uma conversa exportada pelo Sem Sinal.')}
+  };
+  i.click();
+}
+
+function fotos(v){
+  const r=el('div','row');
+  const a=el('button','btn pri','Escolher da galeria');a.onclick=()=>pick(true,false,d=>{D.photos.unshift(d);persist('photos');render()});
+  const b=el('button','btn','Tirar foto');b.onclick=()=>pick(false,true,d=>{D.photos.unshift(d);persist('photos');render()});
+  r.append(a,b);v.append(r);
+  if(!D.photos.length)v.append(el('p','empty','Sua galeria está vazia. Adicione fotos do celular para usar de fundo, avatar ou enviar nas conversas.'));
+  const g=el('div','grid');
+  D.photos.forEach((p,i)=>{const im=new Image();im.src=p;im.onclick=()=>view(p,i);g.append(im)});
+  v.append(g);
+}
+
+const PRE=[['Âmbar','#101820','#f2ece0','#ffb703'],['Floresta','#0b1f14','#e8f5e9','#4ade80'],['Brasa','#2a0f1f','#fde8f0','#fb923c'],['Papel','#f8f5ee','#1c1917','#dc2626'],['Neon','#0a0014','#f5e9ff','#e879f9']];
+const FONTS=[['Sistema','system-ui,sans-serif'],['Serifada','Georgia,serif'],['Máquina','ui-monospace,Menlo,monospace'],['Redonda','"Trebuchet MS",sans-serif']];
+function estilo(v){
+  const f=el('div','f');
+  const txt=(lab,key)=>{const l=el('label','',lab);const i=document.createElement('input');i.type='text';i.value=S[key];i.oninput=()=>{S[key]=i.value;save();theme();head()};f.append(l,i)};
+  txt('Nome do app','name');txt('Slogan','slogan');txt('Seu nome nas conversas','me');
+  f.append(el('label','','Temas prontos'));
+  const pr=el('div','row');
+  PRE.forEach(p=>{const b=el('button','btn',p[0]);b.onclick=()=>{S.bg=p[1];S.fg=p[2];S.acc=p[3];save();render()};pr.append(b)});
+  f.append(pr);
+  const cols=el('div','cols');
+  [['Fundo','bg'],['Texto','fg'],['Destaque','acc']].forEach(([lab,k])=>{const w=document.createElement('div');w.append(el('label','',lab));const i=document.createElement('input');i.type='color';i.value=S[k];i.oninput=()=>{S[k]=i.value;save();theme()};w.append(i);cols.append(w)});
+  f.append(cols);
+  f.append(el('label','','Fonte'));
+  const sel=document.createElement('select');
+  FONTS.forEach(([n,val])=>{const o=document.createElement('option');o.value=val;o.textContent=n;if(val===S.font)o.selected=true;sel.append(o)});
+  sel.onchange=()=>{S.font=sel.value;save();theme()};f.append(sel);
+  f.append(el('label','','Arredondamento'));
+  const rg=document.createElement('input');rg.type='range';rg.min=0;rg.max=32;rg.value=S.r;rg.oninput=()=>{S.r=+rg.value;save();theme()};f.append(rg);
+  const r=el('div','row');
+  const bg=el('button','btn','Foto de fundo');bg.onclick=()=>pick(false,false,d=>{D.bgp=d;persist('bgp');render()});
+  const av=el('button','btn','Foto de avatar');av.onclick=()=>pick(false,false,d=>{D.av=d;persist('av');render()});
+  const rm=el('button','btn','Remover fotos');rm.onclick=()=>{D.bgp=null;D.av=null;persist('bgp');persist('av');render()};
+  r.append(bg,av,rm);f.append(r);
+  const r2=el('div','row');
+  if(dp){const ins=el('button','btn pri','Instalar app');ins.onclick=()=>{dp.prompt();dp=null;render()};r2.append(ins)}
+  const rs=el('button','btn','Restaurar visual');rs.onclick=()=>{if(confirm('Voltar ao visual padrão?')){S={...DEF};save();render()}};
+  r2.append(rs);f.append(r2);
+  f.append(el('p','note','Para instalar: menu do navegador, Adicionar à tela inicial. Depois de aberto uma vez, o app funciona sem internet.'));
+  v.append(f);
+}
+
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;if(tab==='estilo')render()});
+(async()=>{
+  for(const k of Object.keys(D)){const x=await kv.get(k);if(x!==undefined&&x!==null)D[k]=x}
+  if(!D.contacts.length)D.contacts=[{id:'c1',name:'Contato 1'}];
+  render();
+})();
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
